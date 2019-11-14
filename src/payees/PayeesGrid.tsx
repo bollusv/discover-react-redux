@@ -1,6 +1,9 @@
 import React from 'react';
 import * as lodash from 'lodash';
 import { Payee } from './payee-types';
+import { connect } from 'react-redux';
+import { sortPayees } from './payees-actions';
+import { Dispatch } from 'redux';
 
 export interface ColumnConfig {
   field: string;
@@ -10,12 +13,13 @@ export interface ColumnConfig {
 interface PayeesGridProps {
   payees: Payee[];
   columnConfig: ColumnConfig[];
+  sortPayees: (sortField: string) => void;
 }
 
-const PayeesGrid = ({ payees, columnConfig }: PayeesGridProps) => {
+const PayeesGrid = ({ payees, columnConfig, sortPayees }: PayeesGridProps) => {
   return (
     <table className="table table-striped table-hover">
-      <PayeesGridHeader columnConfig={columnConfig} />
+      <PayeesGridHeaderRedux columnConfig={columnConfig} />
       <tbody>
         {payees.map(payee => (
           <PayeesGridRow
@@ -29,36 +33,33 @@ const PayeesGrid = ({ payees, columnConfig }: PayeesGridProps) => {
   );
 };
 
-/* interface PayeesGridHeaderProps {
-  columns: ColumnConfig[];
-}
- */
+type PayeesGridHeaderProps = Pick<
+  PayeesGridProps,
+  'columnConfig' | 'sortPayees'
+>;
 
-type PayeesGridHeaderProps = Pick<PayeesGridProps, 'columnConfig'>;
-
-const PayeesGridHeader = ({ columnConfig }: PayeesGridHeaderProps) => {
+const PayeesGridHeader = ({
+  columnConfig,
+  sortPayees,
+}: PayeesGridHeaderProps) => {
   return (
     <thead>
       <tr>
         {columnConfig.map(column => (
-          <th key={column.field}>{column.label}</th>
+          <th key={column.field} onClick={() => sortPayees(column.field)}>
+            {column.label}
+          </th>
         ))}
       </tr>
     </thead>
   );
 };
 
-/* interface PayeesGridRowProps {
-  payee: Payee;
-}
- */
-/*
- interface PayeeProp {
-  payee: Payee;
-}
-*/
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  sortPayees: (field: string) => dispatch(sortPayees(field)),
+});
 
-// type PayeesGridRowProps = Pick<PayeesGridProps, 'columnConfig'> & PayeeProp;
+const PayeesGridHeaderRedux = connect(null, mapDispatchToProps)(PayeesGridHeader);
 
 interface PayeesGridRowProps extends Pick<PayeesGridProps, 'columnConfig'> {
   payee: Payee;
